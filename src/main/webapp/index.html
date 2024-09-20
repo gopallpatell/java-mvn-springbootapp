@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guess the Number Game</title>
+    <title>Memory Card Match Game</title>
     <style>
         body {
             display: flex;
@@ -11,63 +11,112 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
+            background-color: #e0f7fa;
+            font-family: 'Arial', sans-serif;
+        }
+        h1 {
+            color: #00796b;
         }
         #game {
-            text-align: center;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            gap: 10px;
+            margin: 20px;
         }
-        input {
-            padding: 10px;
-            margin: 10px;
-            font-size: 16px;
+        .card {
+            width: 100px;
+            height: 100px;
+            background-color: #ffffff;
+            border: 2px solid #00796b;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: transparent;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .card.flipped {
+            background-color: #ffffff;
+            color: #00796b;
+        }
+        .card.matched {
+            background-color: #c8e6c9;
+            color: #004d40;
+            cursor: default;
+        }
+        #message {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #00796b;
         }
         button {
             padding: 10px 15px;
-            font-size: 16px;
+            margin-top: 20px;
+            border: none;
+            background-color: #00796b;
+            color: white;
+            border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
         }
-        #message {
-            margin-top: 15px;
-            font-size: 18px;
-            color: #333;
+        button:hover {
+            background-color: #004d40;
         }
     </style>
 </head>
 <body>
 
-<div id="game">
-    <h1>Guess the Number</h1>
-    <p>I'm thinking of a number between 1 and 100.</p>
-    <input type="number" id="guessInput" placeholder="Enter your guess" />
-    <button id="guessButton">Guess</button>
-    <div id="message"></div>
-    <button id="resetButton" style="display: none;">Play Again</button>
-</div>
+<h1>Memory Card Match</h1>
+<div id="game"></div>
+<div id="message"></div>
+<button id="resetButton">Reset Game</button>
 
 <script>
-    let randomNumber;
-    const guessInput = document.getElementById('guessInput');
-    const guessButton = document.getElementById('guessButton');
+    const cardValues = ['🍎', '🍌', '🍓', '🍉', '🍇', '🍊', '🍍', '🍒'];
+    const gameBoard = document.getElementById('game');
     const messageDisplay = document.getElementById('message');
     const resetButton = document.getElementById('resetButton');
 
+    let cards = [];
+    let flippedCards = [];
+    let matchedCards = 0;
+
     function startGame() {
-        randomNumber = Math.floor(Math.random() * 100) + 1;
+        cards = [...cardValues, ...cardValues].sort(() => 0.5 - Math.random());
+        gameBoard.innerHTML = '';
         messageDisplay.textContent = '';
-        guessInput.value = '';
-        guessInput.disabled = false;
-        guessButton.style.display = 'inline';
-        resetButton.style.display = 'none';
+        matchedCards = 0;
+        flippedCards = [];
+        createCards();
     }
 
-    function checkGuess() {
-        const userGuess = Number(guessInput.value);
-        if (userGuess < 1 || userGuess > 100) {
-            messageDisplay.textContent = 'Please enter a number between 1 and 100.';
-        } else if (userGuess < randomNumber) {
-            messageD
+    function createCards() {
+        cards.forEach(value => {
+            const card = document.createElement('div');
+            card.classList.add('card');
+            card.dataset.value = value;
+            card.addEventListener('click', flipCard);
+            gameBoard.appendChild(card);
+        });
+    }
+
+    function flipCard() {
+        if (flippedCards.length < 2 && !this.classList.contains('flipped') && !this.classList.contains('matched')) {
+            this.classList.add('flipped');
+            this.textContent = this.dataset.value;
+            flippedCards.push(this);
+
+            if (flippedCards.length === 2) {
+                setTimeout(checkMatch, 1000);
+            }
+        }
+    }
+
+    function checkMatch() {
+        const [firstCard, secondCard] = flippedCards;
+        if (firstCard.dataset.value === secondCard.dataset.value) {
+            firstCard.classList.add('matched');
+            secondCard.classList.add('matched');
+            matched
